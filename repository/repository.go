@@ -37,4 +37,3 @@ func (r *Repository[T]) DeleteByID(id uint) error {
 	var entity T
 	return r.db.Delete(&entity, id).Error
 }
-
