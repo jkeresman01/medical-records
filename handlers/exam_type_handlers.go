@@ -146,4 +146,3 @@ func DeleteExamType(c *fiber.Ctx) error {
 		"ExamTypes": examTypeVMs,
 	})
 }
-

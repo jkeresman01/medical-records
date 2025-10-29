@@ -277,4 +277,3 @@ func DeleteExam(c *fiber.Ctx) error {
 		"Exams": examVMs,
 	})
 }
-

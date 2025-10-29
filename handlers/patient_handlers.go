@@ -239,4 +239,3 @@ func GetEditPatientForm(c *fiber.Ctx) error {
 		"Patient": patientVM,
 	})
 }
-

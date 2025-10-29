@@ -146,4 +146,3 @@ func DeleteMedication(c *fiber.Ctx) error {
 		"Medications": medicationVMs,
 	})
 }
-

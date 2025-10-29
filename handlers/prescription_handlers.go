@@ -271,4 +271,3 @@ func DeletePrescription(c *fiber.Ctx) error {
 		"Prescriptions": prescriptionVMs,
 	})
 }
-

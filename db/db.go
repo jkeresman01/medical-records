@@ -10,7 +10,7 @@ import (
 	"github.com/jkeresman01/medical-records/models"
 )
 
-var DB                *gorm.DB
+var DB *gorm.DB
 
 func Connect(cfg *config.Config) {
 	db, err := gorm.Open(postgres.Open(cfg.ConnString()), &gorm.Config{})
