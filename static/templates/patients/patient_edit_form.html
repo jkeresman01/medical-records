@@ -1,0 +1,34 @@
+<div class="card" style="margin-top: 20px;">
+    <h3>Edit Patient</h3>
+    <form 
+        hx-put="/patients/{{.Patient.ID}}" 
+        hx-target="#patients-list"
+        hx-swap="innerHTML"
+        hx-on::after-request="document.getElementById('patient-form-container').innerHTML = '';">
+        
+        <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" value="{{.Patient.FirstName}}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" value="{{.Patient.LastName}}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" value="{{.Patient.DOB}}" required>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Update Patient</button>
+            <button 
+                type="button" 
+                class="btn btn-danger"
+                onclick="document.getElementById('patient-form-container').innerHTML = '';">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,0 +1,29 @@
+<div class="card" style="margin-top: 20px;">
+    <h3>Edit Medication</h3>
+    <form 
+        hx-put="/medications/{{.Medication.ID}}" 
+        hx-target="#medications-list"
+        hx-swap="innerHTML"
+        hx-on::after-request="document.getElementById('medication-form-container').innerHTML = '';">
+        
+        <div class="form-group">
+            <label for="name">Medication Name:</label>
+            <input type="text" id="name" name="name" value="{{.Medication.Name}}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="manufacturer">Manufacturer:</label>
+            <input type="text" id="manufacturer" name="manufacturer" value="{{.Medication.Manufacturer}}" required>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Update Medication</button>
+            <button 
+                type="button" 
+                class="btn btn-danger"
+                onclick="document.getElementById('medication-form-container').innerHTML = '';">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

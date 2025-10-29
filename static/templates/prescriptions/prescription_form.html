@@ -1,0 +1,49 @@
+<div class="card" style="margin-top: 20px;">
+    <h3>Add New Prescription</h3>
+    <form 
+        hx-post="/prescriptions" 
+        hx-target="#prescriptions-list"
+        hx-swap="innerHTML"
+        hx-on::after-request="this.reset(); document.getElementById('prescription-form-container').innerHTML = '';">
+        
+        <div class="form-group">
+            <label for="patient_id">Patient:</label>
+            <select id="patient_id" name="patient_id" required>
+                <option value="">Select a patient...</option>
+                {{range .Patients}}
+                <option value="{{.ID}}">{{.FirstName}} {{.LastName}} (DOB: {{.DOB}})</option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="medication_id">Medication:</label>
+            <select id="medication_id" name="medication_id" required>
+                <option value="">Select a medication...</option>
+                {{range .Medications}}
+                <option value="{{.ID}}">{{.Name}} - {{.Manufacturer}}</option>
+                {{end}}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="dosage">Dosage:</label>
+            <input type="text" id="dosage" name="dosage" placeholder="e.g., 500mg" required>
+        </div>
+
+        <div class="form-group">
+            <label for="frequency">Frequency:</label>
+            <input type="text" id="frequency" name="frequency" placeholder="e.g., Twice daily" required>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Save Prescription</button>
+            <button 
+                type="button" 
+                class="btn btn-danger"
+                onclick="document.getElementById('prescription-form-container').innerHTML = '';">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

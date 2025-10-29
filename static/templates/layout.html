@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Records System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body>
+    <header>
+        <h1>Medical Records Management System</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/patients">Patients</a></li>
+            <li><a href="/medications">Medications</a></li>
+            <li><a href="/prescriptions">Prescriptions</a></li>
+            <li><a href="/exam-types">Exam Types</a></li>
+            <li><a href="/exams">Exams</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        {{embed}}
+    </div>
+
+    <script>
+        // Handle HTMX events
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            console.log('Content swapped');
+        });
+    </script>
+</body>
+</html>

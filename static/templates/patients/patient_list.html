@@ -1,0 +1,51 @@
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Date of Birth</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Patients}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.FirstName}}</td>
+            <td>{{.LastName}}</td>
+            <td>{{.DOB}}</td>
+            <td class="actions">
+                <button 
+                    class="btn btn-primary" 
+                    hx-get="/patients/{{.ID}}" 
+                    hx-target="#patient-detail-modal"
+                    hx-swap="innerHTML">
+                    View
+                </button>
+                <button 
+                    class="btn btn-warning" 
+                    hx-get="/patients/{{.ID}}/edit" 
+                    hx-target="#patient-form-container"
+                    hx-swap="innerHTML">
+                    Edit
+                </button>
+                <button 
+                    class="btn btn-danger" 
+                    hx-delete="/patients/{{.ID}}" 
+                    hx-target="#patients-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Are you sure you want to delete this patient?">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="5" style="text-align: center;">No patients found</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>
+
+<div id="patient-detail-modal"></div>

@@ -1,0 +1,56 @@
+<div class="card">
+    <h2>Exam Types Management</h2>
+    
+    <button 
+        class="btn btn-primary" 
+        hx-get="/exam-types/new" 
+        hx-target="#exam-type-form-container"
+        hx-swap="innerHTML">
+        Add New Exam Type
+    </button>
+
+    <div id="exam-type-form-container"></div>
+
+    <div id="exam-types-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .ExamTypes}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Name}}</td>
+                    <td>{{.Description}}</td>
+                    <td class="actions">
+                        <button 
+                            class="btn btn-warning" 
+                            hx-get="/exam-types/{{.ID}}/edit" 
+                            hx-target="#exam-type-form-container"
+                            hx-swap="innerHTML">
+                            Edit
+                        </button>
+                        <button 
+                            class="btn btn-danger" 
+                            hx-delete="/exam-types/{{.ID}}" 
+                            hx-target="#exam-types-list"
+                            hx-swap="innerHTML"
+                            hx-confirm="Are you sure you want to delete this exam type?">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="4" style="text-align: center;">No exam types found</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>

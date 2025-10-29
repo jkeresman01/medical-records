@@ -1,0 +1,29 @@
+<div class="card" style="margin-top: 20px;">
+    <h3>Edit Exam Type</h3>
+    <form 
+        hx-put="/exam-types/{{.ExamType.ID}}" 
+        hx-target="#exam-types-list"
+        hx-swap="innerHTML"
+        hx-on::after-request="document.getElementById('exam-type-form-container').innerHTML = '';">
+        
+        <div class="form-group">
+            <label for="name">Exam Type Name:</label>
+            <input type="text" id="name" name="name" value="{{.ExamType.Name}}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="3" required>{{.ExamType.Description}}</textarea>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Update Exam Type</button>
+            <button 
+                type="button" 
+                class="btn btn-danger"
+                onclick="document.getElementById('exam-type-form-container').innerHTML = '';">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>

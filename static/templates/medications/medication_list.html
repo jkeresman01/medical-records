@@ -1,0 +1,40 @@
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Manufacturer</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .Medications}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Manufacturer}}</td>
+            <td class="actions">
+                <button 
+                    class="btn btn-warning" 
+                    hx-get="/medications/{{.ID}}/edit" 
+                    hx-target="#medication-form-container"
+                    hx-swap="innerHTML">
+                    Edit
+                </button>
+                <button 
+                    class="btn btn-danger" 
+                    hx-delete="/medications/{{.ID}}" 
+                    hx-target="#medications-list"
+                    hx-swap="innerHTML"
+                    hx-confirm="Are you sure you want to delete this medication?">
+                    Delete
+                </button>
+            </td>
+        </tr>
+        {{else}}
+        <tr>
+            <td colspan="4" style="text-align: center;">No medications found</td>
+        </tr>
+        {{end}}
+    </tbody>
+</table>

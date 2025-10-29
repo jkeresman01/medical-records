@@ -1,0 +1,17 @@
+<div class="card">
+    <h2>Patients Management</h2>
+    
+    <button 
+        class="btn btn-primary" 
+        hx-get="/patients/new" 
+        hx-target="#patient-form-container"
+        hx-swap="innerHTML">
+        Add New Patient
+    </button>
+
+    <div id="patient-form-container"></div>
+
+    <div id="patients-list" hx-get="/patients/list" hx-trigger="load" hx-swap="innerHTML">
+        <div class="spinner"></div>
+    </div>
+</div>

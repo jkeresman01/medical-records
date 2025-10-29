@@ -1,0 +1,60 @@
+<div class="card">
+    <h2>Exams Management</h2>
+    
+    <button 
+        class="btn btn-primary" 
+        hx-get="/exams/new" 
+        hx-target="#exam-form-container"
+        hx-swap="innerHTML">
+        Add New Exam
+    </button>
+
+    <div id="exam-form-container"></div>
+
+    <div id="exams-list">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Exam Type</th>
+                    <th>Result</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Exams}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td>{{.Patient.FirstName}} {{.Patient.LastName}}</td>
+                    <td>{{.ExamType}}</td>
+                    <td>{{.Result}}</td>
+                    <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+                    <td class="actions">
+                        <button 
+                            class="btn btn-warning" 
+                            hx-get="/exams/{{.ID}}/edit" 
+                            hx-target="#exam-form-container"
+                            hx-swap="innerHTML">
+                            Edit
+                        </button>
+                        <button 
+                            class="btn btn-danger" 
+                            hx-delete="/exams/{{.ID}}" 
+                            hx-target="#exams-list"
+                            hx-swap="innerHTML"
+                            hx-confirm="Are you sure you want to delete this exam?">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="6" style="text-align: center;">No exams found</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>

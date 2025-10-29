@@ -1,0 +1,34 @@
+<div class="card" style="margin-top: 20px;">
+    <h3>Add New Patient</h3>
+    <form 
+        hx-post="/patients" 
+        hx-target="#patients-list"
+        hx-swap="innerHTML"
+        hx-on::after-request="this.reset(); document.getElementById('patient-form-container').innerHTML = '';">
+        
+        <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="dob">Date of Birth:</label>
+            <input type="date" id="dob" name="dob" required>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-success">Save Patient</button>
+            <button 
+                type="button" 
+                class="btn btn-danger"
+                onclick="document.getElementById('patient-form-container').innerHTML = '';">
+                Cancel
+            </button>
+        </div>
+    </form>
+</div>
