@@ -122,7 +122,11 @@ func CreateExam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error creating exam")
 	}
 
-	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
+	exams, err := examRepository.FindAllWithPreloads("Patient", "ExamType")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to fetch exams!")
+	}
+
 	examVMs := mapper.ToExamViewModelList(exams)
 
 	return c.Render("exams/exam_list", fiber.Map{
