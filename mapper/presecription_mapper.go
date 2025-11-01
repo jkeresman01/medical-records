@@ -22,4 +22,3 @@ func ToPrescriptionViewModelList(prescriptions []models.Prescription) []viewmode
 	}
 	return vms
 }
-
