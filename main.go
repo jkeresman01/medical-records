@@ -15,10 +15,10 @@ func main() {
 	cfg := config.GetFromEnv()
 	db.Connect(cfg)
 
-	engine := html.New("./static/templates", ".html")
+	views := html.New("./views", ".html")
 
 	app := fiber.New(fiber.Config{
-		Views: engine,
+		Views: views,
 	})
 
 	app.Static("/static", "./static")
