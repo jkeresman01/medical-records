@@ -230,7 +230,7 @@ func DeleteExam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error deleting exam")
 	}
 
-	exams, _ := examRepository.FindAll()
+	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
 
 	var examVMs []viewmodels.ExamViewModel
 	for _, e := range exams {
