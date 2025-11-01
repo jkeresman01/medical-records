@@ -21,3 +21,14 @@ func ToPatientViewModelList(patients []models.Patient) []viewmodels.PatientViewM
 	}
 	return vms
 }
+
+func ToPatientDetailViewModel(p models.Patient) viewmodels.PatientDetailViewModel {
+	return viewmodels.PatientDetailViewModel{
+		ID:            p.ID,
+		FirstName:     p.FirstName,
+		LastName:      p.LastName,
+		DOB:           p.DOB,
+		Prescriptions: ToPrescriptionViewModelList(p.Prescriptions),
+		Exams:         ToExamViewModelList(p.Exams),
+	}
+}
