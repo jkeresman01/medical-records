@@ -4,9 +4,9 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jkeresman01/medical-records/mapper"
 	"github.com/jkeresman01/medical-records/models"
 	"github.com/jkeresman01/medical-records/repository/factory"
-	"github.com/jkeresman01/medical-records/viewmodels"
 )
 
 func GetExams(c *fiber.Ctx) error {
@@ -19,37 +19,21 @@ func GetExams(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching exams")
 	}
 
-	var examVMs []viewmodels.ExamViewModel
-	for _, e := range exams {
-		examVMs = append(examVMs, viewmodels.ExamViewModel{
-			ID:           e.ID,
-			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
-			ExamTypeName: e.ExamType.Description,
-			Result:       e.Result,
-			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
-		})
+	examVMs := mapper.ToExamViewModelList(exams)
+
+	patients, err := patientRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed fetching patients")
 	}
 
-	patients, _ := patientRepository.FindAll()
-	var patientVMs []viewmodels.PatientViewModel
-	for _, p := range patients {
-		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
-			ID:        p.ID,
-			FirstName: p.FirstName,
-			LastName:  p.LastName,
-			DOB:       p.DOB,
-		})
+	patientVMs := mapper.ToPatientViewModelList(patients)
+
+	examTypes, err := examTypeRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("Failed exam types patients")
 	}
 
-	examTypes, _ := examTypeRepository.FindAll()
-	var examTypeVMs []viewmodels.ExamTypeViewModel
-	for _, et := range examTypes {
-		examTypeVMs = append(examTypeVMs, viewmodels.ExamTypeViewModel{
-			ID:          et.ID,
-			Name:        et.Name,
-			Description: et.Description,
-		})
-	}
+	examTypeVMs := mapper.ToExamTypeViewModelList(examTypes)
 
 	return c.Render("exams/exams", fiber.Map{
 		"Exams":     examVMs,
@@ -62,26 +46,19 @@ func GetExamForm(c *fiber.Ctx) error {
 	patientRepository := repositoryfactory.GetInstance[models.Patient]()
 	examTypeRepository := repositoryfactory.GetInstance[models.ExamType]()
 
-	patients, _ := patientRepository.FindAll()
-	var patientVMs []viewmodels.PatientViewModel
-	for _, p := range patients {
-		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
-			ID:        p.ID,
-			FirstName: p.FirstName,
-			LastName:  p.LastName,
-			DOB:       p.DOB,
-		})
+	patients, err := patientRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching exams")
 	}
 
-	examTypes, _ := examTypeRepository.FindAll()
-	var examTypeVMs []viewmodels.ExamTypeViewModel
-	for _, et := range examTypes {
-		examTypeVMs = append(examTypeVMs, viewmodels.ExamTypeViewModel{
-			ID:          et.ID,
-			Name:        et.Name,
-			Description: et.Description,
-		})
+	patientVMs := mapper.ToPatientViewModelList(patients)
+
+	examTypes, err := examTypeRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("Failed fetching exam types")
 	}
+
+	examTypeVMs := mapper.ToExamTypeViewModelList(examTypes)
 
 	return c.Render("exams/exam_form", fiber.Map{
 		"Patients":  patientVMs,
@@ -104,35 +81,21 @@ func GetEditExamForm(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Exam not found")
 	}
 
-	examVM := viewmodels.ExamViewModel{
-		ID:           exam.ID,
-		PatientName:  exam.Patient.FirstName + " " + exam.Patient.LastName,
-		ExamTypeName: exam.ExamType.Name,
-		Result:       exam.Result,
-		CreatedAt:    exam.CreatedAt.Format("2006-01-02"),
+	examVM := mapper.ToExamViewModel(*exam)
+
+	patients, err := patientRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed fetching patients")
 	}
 
-	patients, _ := patientRepository.FindAll()
-	examTypes, _ := examTypeRepository.FindAll()
+	patientVMs := mapper.ToPatientViewModelList(patients)
 
-	var patientVMs []viewmodels.PatientViewModel
-	for _, p := range patients {
-		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
-			ID:        p.ID,
-			FirstName: p.FirstName,
-			LastName:  p.LastName,
-			DOB:       p.DOB,
-		})
+	examTypes, err := examTypeRepository.FindAll()
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("Failed exam types patients")
 	}
 
-	var examTypeVMs []viewmodels.ExamTypeViewModel
-	for _, et := range examTypes {
-		examTypeVMs = append(examTypeVMs, viewmodels.ExamTypeViewModel{
-			ID:          et.ID,
-			Name:        et.Name,
-			Description: et.Description,
-		})
-	}
+	examTypeVMs := mapper.ToExamTypeViewModelList(examTypes)
 
 	return c.Render("exams/exam_edit_form", fiber.Map{
 		"Exam":          examVM,
@@ -160,16 +123,7 @@ func CreateExam(c *fiber.Ctx) error {
 	}
 
 	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
-	var examVMs []viewmodels.ExamViewModel
-	for _, e := range exams {
-		examVMs = append(examVMs, viewmodels.ExamViewModel{
-			ID:           e.ID,
-			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
-			ExamTypeName: e.ExamType.Name,
-			Result:       e.Result,
-			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
-		})
-	}
+	examVMs := mapper.ToExamViewModelList(exams)
 
 	return c.Render("exams/exam_list", fiber.Map{
 		"Exams": examVMs,
@@ -200,18 +154,12 @@ func UpdateExam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error updating exam")
 	}
 
-	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
-
-	var examVMs []viewmodels.ExamViewModel
-	for _, e := range exams {
-		examVMs = append(examVMs, viewmodels.ExamViewModel{
-			ID:           e.ID,
-			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
-			ExamTypeName: e.ExamType.Name,
-			Result:       e.Result,
-			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
-		})
+	exams, err := examRepository.FindAllWithPreloads("Patient", "ExamType")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to fetch exams!")
 	}
+
+	examVMs := mapper.ToExamViewModelList(exams)
 
 	return c.Render("exams/exam_list", fiber.Map{
 		"Exams": examVMs,
@@ -230,18 +178,12 @@ func DeleteExam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error deleting exam")
 	}
 
-	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
-
-	var examVMs []viewmodels.ExamViewModel
-	for _, e := range exams {
-		examVMs = append(examVMs, viewmodels.ExamViewModel{
-			ID:           e.ID,
-			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
-			ExamTypeName: e.ExamType.Description,
-			Result:       e.Result,
-			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
-		})
+	exams, err := examRepository.FindAllWithPreloads("Patient", "ExamType")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to fetch exams!")
 	}
+
+	examVMs := mapper.ToExamViewModelList(exams)
 
 	return c.Render("exams/exam_list", fiber.Map{
 		"Exams": examVMs,
