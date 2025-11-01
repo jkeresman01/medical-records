@@ -4,15 +4,15 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jkeresman01/medical-records/db"
 	"github.com/jkeresman01/medical-records/models"
 	"github.com/jkeresman01/medical-records/repository/factory"
 	"github.com/jkeresman01/medical-records/viewmodels"
 )
 
 func GetPatients(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Patient]()
-	patients, err := repo.FindAll()
+	patientsRepository := repositoryfactory.GetInstance[models.Patient]()
+
+	patients, err := patientsRepository.FindAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching patients")
 	}
@@ -34,6 +34,7 @@ func GetPatients(c *fiber.Ctx) error {
 
 func GetPatientsList(c *fiber.Ctx) error {
 	repo := repositoryfactory.GetInstance[models.Patient]()
+
 	patients, err := repo.FindAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching patients")
@@ -84,49 +85,36 @@ func CreatePatient(c *fiber.Ctx) error {
 }
 
 func GetPatient(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	patientsRepository := repositoryfactory.GetInstance[models.Patient]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	patient, err := repo.FindByID(uint(id))
+	patient, err := patientsRepository.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Patient not found")
 	}
 
-	var allPrescriptions []models.Prescription
-	db.DB.Where("patient_id = ?", id).Find(&allPrescriptions)
-
 	var prescriptionVMs []viewmodels.PrescriptionViewModel
-	for _, p := range allPrescriptions {
-		medication, _ := medicationRepo.FindByID(p.MedicationID)
+	for _, p := range patient.Prescriptions {
+
 		prescriptionVMs = append(prescriptionVMs, viewmodels.PrescriptionViewModel{
 			ID:             p.ID,
-			PatientID:      p.PatientID,
-			MedicationID:   p.MedicationID,
 			PatientName:    patient.FirstName + " " + patient.LastName,
-			MedicationName: medication.Name,
+			MedicationName: p.Medication.Name,
 			Dosage:         p.Dosage,
 			Frequency:      p.Frequency,
 		})
 	}
 
-	var allExams []models.Exam
-	db.DB.Where("patient_id = ?", id).Find(&allExams)
-
 	var examVMs []viewmodels.ExamViewModel
-	for _, e := range allExams {
-		examType, _ := examTypeRepo.FindByID(e.ExamTypeID)
+	for _, e := range patient.Exams {
 		examVMs = append(examVMs, viewmodels.ExamViewModel{
 			ID:           e.ID,
-			PatientID:    e.PatientID,
-			ExamTypeID:   e.ExamTypeID,
-			PatientName:  patient.FirstName + " " + patient.LastName,
-			ExamTypeName: examType.Name,
+			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
+			ExamTypeName: e.ExamType.Name,
 			Result:       e.Result,
 			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
 		})
@@ -147,27 +135,27 @@ func GetPatient(c *fiber.Ctx) error {
 }
 
 func UpdatePatient(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Patient]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("No can do, Invalid ID")
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	patient, err := repo.FindByID(uint(id))
+	patient, err := patientRepository.FindByID(uint(id))
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).SendString("No can do, Patient not found")
+		return c.Status(fiber.StatusNotFound).SendString("Patient not found")
 	}
 
 	patient.FirstName = c.FormValue("first_name")
 	patient.LastName = c.FormValue("last_name")
 	patient.DOB = c.FormValue("dob")
 
-	if err := repo.Update(patient); err != nil {
+	if err := patientRepository.Update(patient); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error updating patient")
 	}
 
-	patients, _ := repo.FindAll()
+	patients, _ := patientRepository.FindAll()
 	var patientVMs []viewmodels.PatientViewModel
 	for _, p := range patients {
 		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
@@ -185,7 +173,6 @@ func UpdatePatient(c *fiber.Ctx) error {
 
 func DeletePatient(c *fiber.Ctx) error {
 	repo := repositoryfactory.GetInstance[models.Patient]()
-
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
@@ -220,7 +207,7 @@ func GetEditPatientForm(c *fiber.Ctx) error {
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("No can do, Invalid ID")
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
 	patient, err := repo.FindByID(uint(id))

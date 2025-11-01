@@ -10,31 +10,27 @@ import (
 )
 
 func GetPrescriptions(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Prescription]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
+	prescriptionsRepository := repositoryfactory.GetInstance[models.Prescription]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
+	medicationRepository := repositoryfactory.GetInstance[models.Medication]()
 
-	prescriptions, err := repo.FindAll()
+	prescriptions, err := prescriptionsRepository.FindAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching prescriptions")
 	}
 
 	var prescriptionVMs []viewmodels.PrescriptionViewModel
 	for _, p := range prescriptions {
-		patient, _ := patientRepo.FindByID(p.PatientID)
-		medication, _ := medicationRepo.FindByID(p.MedicationID)
 		prescriptionVMs = append(prescriptionVMs, viewmodels.PrescriptionViewModel{
 			ID:             p.ID,
-			PatientID:      p.PatientID,
-			MedicationID:   p.MedicationID,
-			PatientName:    patient.FirstName + " " + patient.LastName,
-			MedicationName: medication.Name,
+			PatientName:    p.Patient.FirstName + " " + p.Patient.LastName,
+			MedicationName: p.Medication.Name,
 			Dosage:         p.Dosage,
 			Frequency:      p.Frequency,
 		})
 	}
 
-	patients, _ := patientRepo.FindAll()
+	patients, _ := patientRepository.FindAll()
 	var patientVMs []viewmodels.PatientViewModel
 	for _, pat := range patients {
 		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
@@ -45,7 +41,7 @@ func GetPrescriptions(c *fiber.Ctx) error {
 		})
 	}
 
-	medications, _ := medicationRepo.FindAll()
+	medications, _ := medicationRepository.FindAll()
 	var medicationVMs []viewmodels.MedicationViewModel
 	for _, med := range medications {
 		medicationVMs = append(medicationVMs, viewmodels.MedicationViewModel{
@@ -94,34 +90,29 @@ func GetPrescriptionForm(c *fiber.Ctx) error {
 }
 
 func GetEditPrescriptionForm(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Prescription]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
+	prescriptionRepository := repositoryfactory.GetInstance[models.Prescription]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
+	medicationReposiotry := repositoryfactory.GetInstance[models.Medication]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	prescription, err := repo.FindByID(uint(id))
+	prescription, err := prescriptionRepository.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Prescription not found")
 	}
 
-	patient, _ := patientRepo.FindByID(prescription.PatientID)
-	medication, _ := medicationRepo.FindByID(prescription.MedicationID)
-
 	prescriptionVM := viewmodels.PrescriptionViewModel{
 		ID:             prescription.ID,
-		PatientID:      prescription.PatientID,
-		MedicationID:   prescription.MedicationID,
-		PatientName:    patient.FirstName + " " + patient.LastName,
-		MedicationName: medication.Name,
+		PatientName:    prescription.Patient.FirstName + " " + prescription.Patient.LastName,
+		MedicationName: prescription.Medication.Name,
 		Dosage:         prescription.Dosage,
 		Frequency:      prescription.Frequency,
 	}
 
-	patients, _ := patientRepo.FindAll()
+	patients, _ := patientRepository.FindAll()
 	var patientVMs []viewmodels.PatientViewModel
 	for _, p := range patients {
 		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
@@ -132,7 +123,7 @@ func GetEditPrescriptionForm(c *fiber.Ctx) error {
 		})
 	}
 
-	medications, _ := medicationRepo.FindAll()
+	medications, _ := medicationReposiotry.FindAll()
 	var medicationVMs []viewmodels.MedicationViewModel
 	for _, m := range medications {
 		medicationVMs = append(medicationVMs, viewmodels.MedicationViewModel{
@@ -143,42 +134,50 @@ func GetEditPrescriptionForm(c *fiber.Ctx) error {
 	}
 
 	return c.Render("prescriptions/prescription_edit_form", fiber.Map{
-		"Prescription": prescriptionVM,
-		"Patients":     patientVMs,
-		"Medications":  medicationVMs,
+		"Prescription":             prescriptionVM,
+		"PrescriptionPatientID":    prescription.Patient.ID,
+		"PrescriptionMedicationID": prescription.Medication.ID,
+		"Patients":                 patientVMs,
+		"Medications":              medicationVMs,
 	})
 }
 
 func CreatePrescription(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Prescription]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
+	prescriptionRepository := repositoryfactory.GetInstance[models.Prescription]()
+	medicationRepository := repositoryfactory.GetInstance[models.Medication]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
 
 	patientID, _ := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
 	medicationID, _ := strconv.ParseUint(c.FormValue("medication_id"), 10, 32)
 
+	medication, err := medicationRepository.FindByID(uint(medicationID))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("No can do for medication")
+	}
+
+	patient, err := patientRepository.FindByID(uint(patientID))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("No can do for patient")
+	}
+
 	prescription := &models.Prescription{
-		PatientID:    uint(patientID),
-		MedicationID: uint(medicationID),
+		PatientID:    patient.ID,
+		MedicationID: medication.ID,
 		Dosage:       c.FormValue("dosage"),
 		Frequency:    c.FormValue("frequency"),
 	}
 
-	if err := repo.Create(prescription); err != nil {
+	if err := prescriptionRepository.Create(prescription); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error creating prescription")
 	}
 
-	prescriptions, _ := repo.FindAll()
+	prescriptions, _ := prescriptionRepository.FindAll()
 	var prescriptionVMs []viewmodels.PrescriptionViewModel
 	for _, p := range prescriptions {
-		patient, _ := patientRepo.FindByID(p.PatientID)
-		medication, _ := medicationRepo.FindByID(p.MedicationID)
 		prescriptionVMs = append(prescriptionVMs, viewmodels.PrescriptionViewModel{
 			ID:             p.ID,
-			PatientID:      p.PatientID,
-			MedicationID:   p.MedicationID,
-			PatientName:    patient.FirstName + " " + patient.LastName,
-			MedicationName: medication.Name,
+			PatientName:    p.Patient.FirstName + " " + p.Patient.LastName,
+			MedicationName: p.Medication.Name,
 			Dosage:         p.Dosage,
 			Frequency:      p.Frequency,
 		})
@@ -190,16 +189,16 @@ func CreatePrescription(c *fiber.Ctx) error {
 }
 
 func UpdatePrescription(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Prescription]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
+	prescriptionRepository := repositoryfactory.GetInstance[models.Prescription]()
+	medicationRepository := repositoryfactory.GetInstance[models.Medication]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("No can do, Invalid ID")
 	}
 
-	prescription, err := repo.FindByID(uint(id))
+	prescription, err := prescriptionRepository.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Prescription not found")
 	}
@@ -207,24 +206,30 @@ func UpdatePrescription(c *fiber.Ctx) error {
 	patientID, _ := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
 	medicationID, _ := strconv.ParseUint(c.FormValue("medication_id"), 10, 32)
 
-	prescription.PatientID = uint(patientID)
-	prescription.MedicationID = uint(medicationID)
+	patient, err := patientRepository.FindByID(uint(patientID))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("No can do for patient")
+	}
+
+	medication, err := medicationRepository.FindByID(uint(medicationID))
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("No can do for medication")
+	}
+
+	prescription.Patient = *patient
+	prescription.Medication = *medication
 	prescription.Dosage = c.FormValue("dosage")
 	prescription.Frequency = c.FormValue("frequency")
 
-	if err := repo.Update(prescription); err != nil {
+	if err := prescriptionRepository.Update(prescription); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error updating prescription")
 	}
 
-	prescriptions, _ := repo.FindAll()
+	prescriptions, _ := prescriptionRepository.FindAll()
 	var prescriptionVMs []viewmodels.PrescriptionViewModel
 	for _, p := range prescriptions {
-		patient, _ := patientRepo.FindByID(p.PatientID)
-		medication, _ := medicationRepo.FindByID(p.MedicationID)
 		prescriptionVMs = append(prescriptionVMs, viewmodels.PrescriptionViewModel{
 			ID:             p.ID,
-			PatientID:      p.PatientID,
-			MedicationID:   p.MedicationID,
 			PatientName:    patient.FirstName + " " + patient.LastName,
 			MedicationName: medication.Name,
 			Dosage:         p.Dosage,
@@ -238,30 +243,24 @@ func UpdatePrescription(c *fiber.Ctx) error {
 }
 
 func DeletePrescription(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Prescription]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	medicationRepo := repositoryfactory.GetInstance[models.Medication]()
+	prescirptionRepository := repositoryfactory.GetInstance[models.Prescription]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	if err := repo.DeleteByID(uint(id)); err != nil {
+	if err := prescirptionRepository.DeleteByID(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error deleting prescription")
 	}
 
-	prescriptions, _ := repo.FindAll()
+	prescriptions, _ := prescirptionRepository.FindAll()
 	var prescriptionVMs []viewmodels.PrescriptionViewModel
 	for _, p := range prescriptions {
-		patient, _ := patientRepo.FindByID(p.PatientID)
-		medication, _ := medicationRepo.FindByID(p.MedicationID)
 		prescriptionVMs = append(prescriptionVMs, viewmodels.PrescriptionViewModel{
 			ID:             p.ID,
-			PatientID:      p.PatientID,
-			MedicationID:   p.MedicationID,
-			PatientName:    patient.FirstName + " " + patient.LastName,
-			MedicationName: medication.Name,
+			PatientName:    p.Patient.FirstName + " " + p.Patient.LastName,
+			MedicationName: p.Medication.Name,
 			Dosage:         p.Dosage,
 			Frequency:      p.Frequency,
 		})

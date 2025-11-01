@@ -11,7 +11,7 @@
             <select id="patient_id" name="patient_id" required>
                 <option value="">Select a patient...</option>
                 {{range .Patients}}
-                <option value="{{.ID}}" {{if eq .ID $.Prescription.PatientID}}selected{{end}}>{{.FirstName}} {{.LastName}} (DOB: {{.DOB}})</option>
+                <option value="{{.ID}}" {{if eq .ID $.PrescriptionPatientID}}selected{{end}}>{{.FirstName}} {{.LastName}} (DOB: {{.DOB}})</option>
                 {{end}}
             </select>
         </div>
@@ -21,7 +21,7 @@
             <select id="medication_id" name="medication_id" required>
                 <option value="">Select a medication...</option>
                 {{range .Medications}}
-                <option value="{{.ID}}" {{if eq .ID $.Prescription.MedicationID}}selected{{end}}>{{.Name}} - {{.Manufacturer}}</option>
+                <option value="{{.ID}}" {{if eq .ID $.PrescriptionMedicationID}}selected{{end}}>{{.Name}} - {{.Manufacturer}}</option>
                 {{end}}
             </select>
         </div>

@@ -2,8 +2,6 @@ package viewmodels
 
 type ExamViewModel struct {
 	ID           uint   `json:"id"`
-	PatientID    uint   `json:"patient_id"`
-	ExamTypeID   uint   `json:"exam_type_id"`
 	PatientName  string `json:"patient_name"`
 	ExamTypeName string `json:"exam_type_name"`
 	Result       string `json:"result"`

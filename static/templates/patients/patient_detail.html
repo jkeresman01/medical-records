@@ -30,7 +30,7 @@
             <tbody>
                 {{range .Patient.Prescriptions}}
                 <tr>
-                    <td>{{.Medication.Name}}</td>
+                    <td>{{.MedicationName}}</td>
                     <td>{{.Dosage}}</td>
                     <td>{{.Frequency}}</td>
                 </tr>
@@ -56,9 +56,9 @@
             <tbody>
                 {{range .Patient.Exams}}
                 <tr>
-                    <td>{{.ExamType}}</td>
+                    <td>{{.ExamTypeName}}</td>
                     <td>{{.Result}}</td>
-                    <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+                    <td>{{.CreatedAt}}</td>
                 </tr>
                 {{end}}
             </tbody>

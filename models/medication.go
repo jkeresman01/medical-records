@@ -1,7 +1,10 @@
 package models
 
+import "gorm.io/gorm"
+
 type Medication struct {
-	ID           uint   `gorm:"primaryKey;autoIncrement"`
-	Name         string `gorm:"not null;uniqueIndex"`
-	Manufacturer string `gorm:"not null"`
+	gorm.Model
+	Name          string         `gorm:"not null;uniqueIndex"`
+	Manufacturer  string         `gorm:"not null"`
+	Prescriptions []Prescription `gorm:"foreignKey:MedicationID"`
 }

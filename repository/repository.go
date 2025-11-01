@@ -37,3 +37,23 @@ func (r *Repository[T]) DeleteByID(id uint) error {
 	var entity T
 	return r.db.Delete(&entity, id).Error
 }
+
+func (r *Repository[T]) FindByIDWithPreloads(id uint, preloads ...string) (*T, error) {
+	var entity T
+	query := r.db
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err := query.First(&entity, id).Error
+	return &entity, err
+}
+
+func (r *Repository[T]) FindAllWithPreloads(preloads ...string) ([]T, error) {
+	var entities []T
+	query := r.db
+	for _, preload := range preloads {
+		query = query.Preload(preload)
+	}
+	err := query.Find(&entities).Error
+	return entities, err
+}

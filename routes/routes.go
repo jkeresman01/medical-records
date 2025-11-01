@@ -8,6 +8,5 @@ func SetupRoutes(app *fiber.App) {
 	SetupPatientRoutes(app)
 	SetupMedicationRoutes(app)
 	SetupPrescriptionRoutes(app)
-	SetupExamTypeRoutes(app)
 	SetupExamRoutes(app)
 }

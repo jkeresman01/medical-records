@@ -13,10 +13,10 @@
         {{range .Exams}}
         <tr>
             <td>{{.ID}}</td>
-            <td>{{.Patient.FirstName}} {{.Patient.LastName}}</td>
-            <td>{{.ExamType}}</td>
+            <td>{{.PatientName}}</td>
+            <td>{{.ExamTypeName}}</td>
             <td>{{.Result}}</td>
-            <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+            <td>{{.CreatedAt}}</td>
             <td class="actions">
                 <button 
                     class="btn btn-warning" 

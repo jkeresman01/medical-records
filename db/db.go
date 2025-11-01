@@ -29,4 +29,20 @@ func Connect(cfg *config.Config) {
 	}
 
 	DB = db
+
+	seedExamTypes(db)
+}
+
+func seedExamTypes(db *gorm.DB) {
+	for _, examType := range models.PredefinedExamTypes {
+		var existing models.ExamType
+		result := db.Where("name = ?", examType.Name).First(&existing)
+
+		if result.Error == gorm.ErrRecordNotFound {
+			if err := db.Create(&examType).Error; err != nil {
+				log.Printf("Warning: Failed to create exam type %s: %v", examType.Name, err)
+			}
+		}
+	}
+	log.Println("Exam types seeded successfully")
 }

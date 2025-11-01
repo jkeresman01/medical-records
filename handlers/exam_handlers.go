@@ -10,32 +10,27 @@ import (
 )
 
 func GetExams(c *fiber.Ctx) error {
-	examRepo := repositoryfactory.GetInstance[models.Exam]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	examRepository := repositoryfactory.GetInstance[models.Exam]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
+	examTypeRepository := repositoryfactory.GetInstance[models.ExamType]()
 
-	exams, err := examRepo.FindAll()
+	exams, err := examRepository.FindAllWithPreloads("Patient", "ExamType")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching exams")
 	}
 
 	var examVMs []viewmodels.ExamViewModel
 	for _, e := range exams {
-		patient, _ := patientRepo.FindByID(e.PatientID)
-		examType, _ := examTypeRepo.FindByID(e.ExamTypeID)
-
 		examVMs = append(examVMs, viewmodels.ExamViewModel{
 			ID:           e.ID,
-			PatientID:    e.PatientID,
-			ExamTypeID:   e.ExamTypeID,
-			PatientName:  patient.FirstName + " " + patient.LastName,
-			ExamTypeName: examType.Name,
+			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
+			ExamTypeName: e.ExamType.Description,
 			Result:       e.Result,
 			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
 		})
 	}
 
-	patients, _ := patientRepo.FindAll()
+	patients, _ := patientRepository.FindAll()
 	var patientVMs []viewmodels.PatientViewModel
 	for _, p := range patients {
 		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
@@ -46,7 +41,7 @@ func GetExams(c *fiber.Ctx) error {
 		})
 	}
 
-	examTypes, _ := examTypeRepo.FindAll()
+	examTypes, _ := examTypeRepository.FindAll()
 	var examTypeVMs []viewmodels.ExamTypeViewModel
 	for _, et := range examTypes {
 		examTypeVMs = append(examTypeVMs, viewmodels.ExamTypeViewModel{
@@ -64,10 +59,10 @@ func GetExams(c *fiber.Ctx) error {
 }
 
 func GetExamForm(c *fiber.Ctx) error {
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
+	examTypeRepository := repositoryfactory.GetInstance[models.ExamType]()
 
-	patients, _ := patientRepo.FindAll()
+	patients, _ := patientRepository.FindAll()
 	var patientVMs []viewmodels.PatientViewModel
 	for _, p := range patients {
 		patientVMs = append(patientVMs, viewmodels.PatientViewModel{
@@ -78,7 +73,7 @@ func GetExamForm(c *fiber.Ctx) error {
 		})
 	}
 
-	examTypes, _ := examTypeRepo.FindAll()
+	examTypes, _ := examTypeRepository.FindAll()
 	var examTypeVMs []viewmodels.ExamTypeViewModel
 	for _, et := range examTypes {
 		examTypeVMs = append(examTypeVMs, viewmodels.ExamTypeViewModel{
@@ -95,35 +90,30 @@ func GetExamForm(c *fiber.Ctx) error {
 }
 
 func GetEditExamForm(c *fiber.Ctx) error {
+	examRepository := repositoryfactory.GetInstance[models.Exam]()
+	patientRepository := repositoryfactory.GetInstance[models.Patient]()
+	examTypeRepository := repositoryfactory.GetInstance[models.ExamType]()
+
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	examRepo := repositoryfactory.GetInstance[models.Exam]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
-
-	exam, err := examRepo.FindByID(uint(id))
+	exam, err := examRepository.FindByIDWithPreloads(uint(id), "Patient", "ExamType")
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Exam not found")
 	}
 
-	patient, _ := patientRepo.FindByID(exam.PatientID)
-	examType, _ := examTypeRepo.FindByID(exam.ExamTypeID)
-
 	examVM := viewmodels.ExamViewModel{
 		ID:           exam.ID,
-		PatientID:    exam.PatientID,
-		ExamTypeID:   exam.ExamTypeID,
-		PatientName:  patient.FirstName + " " + patient.LastName,
-		ExamTypeName: examType.Name,
+		PatientName:  exam.Patient.FirstName + " " + exam.Patient.LastName,
+		ExamTypeName: exam.ExamType.Name,
 		Result:       exam.Result,
 		CreatedAt:    exam.CreatedAt.Format("2006-01-02"),
 	}
 
-	patients, _ := patientRepo.FindAll()
-	examTypes, _ := examTypeRepo.FindAll()
+	patients, _ := patientRepository.FindAll()
+	examTypes, _ := examTypeRepository.FindAll()
 
 	var patientVMs []viewmodels.PatientViewModel
 	for _, p := range patients {
@@ -145,16 +135,16 @@ func GetEditExamForm(c *fiber.Ctx) error {
 	}
 
 	return c.Render("exams/exam_edit_form", fiber.Map{
-		"Exam":      examVM,
-		"Patients":  patientVMs,
-		"ExamTypes": examTypeVMs,
+		"Exam":          examVM,
+		"ExamPatientID": exam.Patient.ID,
+		"ExamTypeID":    exam.ExamType.ID,
+		"Patients":      patientVMs,
+		"ExamTypes":     examTypeVMs,
 	})
 }
 
 func CreateExam(c *fiber.Ctx) error {
-	examRepo := repositoryfactory.GetInstance[models.Exam]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	examRepository := repositoryfactory.GetInstance[models.Exam]()
 
 	patientID, _ := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
 	examTypeID, _ := strconv.ParseUint(c.FormValue("exam_type_id"), 10, 32)
@@ -165,23 +155,17 @@ func CreateExam(c *fiber.Ctx) error {
 		Result:     c.FormValue("result"),
 	}
 
-	if err := examRepo.Create(exam); err != nil {
+	if err := examRepository.Create(exam); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error creating exam")
 	}
 
-	exams, _ := examRepo.FindAll()
-
+	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
 	var examVMs []viewmodels.ExamViewModel
 	for _, e := range exams {
-		patient, _ := patientRepo.FindByID(e.PatientID)
-		examType, _ := examTypeRepo.FindByID(e.ExamTypeID)
-
 		examVMs = append(examVMs, viewmodels.ExamViewModel{
 			ID:           e.ID,
-			PatientID:    e.PatientID,
-			ExamTypeID:   e.ExamTypeID,
-			PatientName:  patient.FirstName + " " + patient.LastName,
-			ExamTypeName: examType.Name,
+			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
+			ExamTypeName: e.ExamType.Name,
 			Result:       e.Result,
 			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
 		})
@@ -193,16 +177,14 @@ func CreateExam(c *fiber.Ctx) error {
 }
 
 func UpdateExam(c *fiber.Ctx) error {
-	examRepo := repositoryfactory.GetInstance[models.Exam]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	examRepository := repositoryfactory.GetInstance[models.Exam]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	exam, err := examRepo.FindByID(uint(id))
+	exam, err := examRepository.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Exam not found")
 	}
@@ -214,23 +196,18 @@ func UpdateExam(c *fiber.Ctx) error {
 	exam.ExamTypeID = uint(examTypeID)
 	exam.Result = c.FormValue("result")
 
-	if err := examRepo.Update(exam); err != nil {
+	if err := examRepository.Update(exam); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error updating exam")
 	}
 
-	exams, _ := examRepo.FindAll()
+	exams, _ := examRepository.FindAllWithPreloads("Patient", "ExamType")
 
 	var examVMs []viewmodels.ExamViewModel
 	for _, e := range exams {
-		patient, _ := patientRepo.FindByID(e.PatientID)
-		examType, _ := examTypeRepo.FindByID(e.ExamTypeID)
-
 		examVMs = append(examVMs, viewmodels.ExamViewModel{
 			ID:           e.ID,
-			PatientID:    e.PatientID,
-			ExamTypeID:   e.ExamTypeID,
-			PatientName:  patient.FirstName + " " + patient.LastName,
-			ExamTypeName: examType.Name,
+			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
+			ExamTypeName: e.ExamType.Name,
 			Result:       e.Result,
 			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
 		})
@@ -242,32 +219,25 @@ func UpdateExam(c *fiber.Ctx) error {
 }
 
 func DeleteExam(c *fiber.Ctx) error {
-	examRepo := repositoryfactory.GetInstance[models.Exam]()
-	patientRepo := repositoryfactory.GetInstance[models.Patient]()
-	examTypeRepo := repositoryfactory.GetInstance[models.ExamType]()
+	examRepository := repositoryfactory.GetInstance[models.Exam]()
 
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	if err := examRepo.DeleteByID(uint(id)); err != nil {
+	if err := examRepository.DeleteByID(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error deleting exam")
 	}
 
-	exams, _ := examRepo.FindAll()
+	exams, _ := examRepository.FindAll()
 
 	var examVMs []viewmodels.ExamViewModel
 	for _, e := range exams {
-		patient, _ := patientRepo.FindByID(e.PatientID)
-		examType, _ := examTypeRepo.FindByID(e.ExamTypeID)
-
 		examVMs = append(examVMs, viewmodels.ExamViewModel{
 			ID:           e.ID,
-			PatientID:    e.PatientID,
-			ExamTypeID:   e.ExamTypeID,
-			PatientName:  patient.FirstName + " " + patient.LastName,
-			ExamTypeName: examType.Name,
+			PatientName:  e.Patient.FirstName + " " + e.Patient.LastName,
+			ExamTypeName: e.ExamType.Description,
 			Result:       e.Result,
 			CreatedAt:    e.CreatedAt.Format("2006-01-02"),
 		})

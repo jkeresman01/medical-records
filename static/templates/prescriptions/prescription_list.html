@@ -13,8 +13,8 @@
         {{range .Prescriptions}}
         <tr>
             <td>{{.ID}}</td>
-            <td>{{.Patient.FirstName}} {{.Patient.LastName}}</td>
-            <td>{{.Medication.Name}}</td>
+            <td>{{.PatientName}}</td>
+            <td>{{.MedicationName}}</td>
             <td>{{.Dosage}}</td>
             <td>{{.Frequency}}</td>
             <td class="actions">

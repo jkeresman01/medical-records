@@ -11,7 +11,7 @@
             <select id="patient_id" name="patient_id" required>
                 <option value="">Select a patient...</option>
                 {{range .Patients}}
-                <option value="{{.ID}}" {{if eq .ID $.Exam.PatientID}}selected{{end}}>{{.FirstName}} {{.LastName}} (DOB: {{.DOB}})</option>
+                <option value="{{.ID}}" {{if eq .ID $.ExamPatientID}}selected{{end}}>{{.FirstName}} {{.LastName}} (DOB: {{.DOB}})</option>
                 {{end}}
             </select>
         </div>
@@ -21,7 +21,7 @@
             <select id="exam_type_id" name="exam_type_id" required>
                 <option value="">Select an exam type...</option>
                 {{range .ExamTypes}}
-                <option value="{{.ID}}" {{if eq .ID $.Exam.ExamTypeID}}selected{{end}}>{{.Name}} - {{.Description}}</option>
+                <option value="{{.ID}}" {{if eq .ID $.ExamTypeID}}selected{{end}}>{{.Description}}</option>
                 {{end}}
             </select>
         </div>

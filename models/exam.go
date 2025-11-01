@@ -1,11 +1,16 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Exam struct {
-	ID         uint      `gorm:"primaryKey;autoIncrement"`
-	PatientID  uint      `gorm:"not null;index"`
-	ExamTypeID uint      `gorm:"not null;index"`
+	gorm.Model
+	PatientID  uint
+	Patient    Patient
+	ExamTypeID uint
+	ExamType   ExamType
 	Result     string    `gorm:"not null"`
 	CreatedAt  time.Time `gorm:"autoCreateTime"`
 }

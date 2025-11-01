@@ -11,12 +11,14 @@ import (
 
 func GetMedications(c *fiber.Ctx) error {
 	repo := repositoryfactory.GetInstance[models.Medication]()
+
 	medications, err := repo.FindAll()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error fetching medications")
 	}
 
 	var medicationVMs []viewmodels.MedicationViewModel
+
 	for _, m := range medications {
 		medicationVMs = append(medicationVMs, viewmodels.MedicationViewModel{
 			ID:           m.ID,
@@ -35,13 +37,12 @@ func GetMedicationForm(c *fiber.Ctx) error {
 }
 
 func GetEditMedicationForm(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Medication]()
-
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
+	repo := repositoryfactory.GetInstance[models.Medication]()
 	medication, err := repo.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Medication not found")
@@ -86,13 +87,12 @@ func CreateMedication(c *fiber.Ctx) error {
 }
 
 func UpdateMedication(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Medication]()
-
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
+	repo := repositoryfactory.GetInstance[models.Medication]()
 	medication, err := repo.FindByID(uint(id))
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Medication not found")
@@ -121,12 +121,12 @@ func UpdateMedication(c *fiber.Ctx) error {
 }
 
 func DeleteMedication(c *fiber.Ctx) error {
-	repo := repositoryfactory.GetInstance[models.Medication]()
-
 	id, err := strconv.ParseUint(c.Params("id"), 10, 32)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
+
+	repo := repositoryfactory.GetInstance[models.Medication]()
 
 	if err := repo.DeleteByID(uint(id)); err != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("Error deleting medication")
@@ -134,6 +134,7 @@ func DeleteMedication(c *fiber.Ctx) error {
 
 	medications, _ := repo.FindAll()
 	var medicationVMs []viewmodels.MedicationViewModel
+
 	for _, m := range medications {
 		medicationVMs = append(medicationVMs, viewmodels.MedicationViewModel{
 			ID:           m.ID,
