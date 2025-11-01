@@ -92,7 +92,7 @@ func GetPatient(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
 	}
 
-	patient, err := patientsRepository.FindByID(uint(id))
+	patient, err := patientsRepository.FindByIDWithPreloads(uint(id), "Prescriptions.Medication", "Exams.ExamType")
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).SendString("Patient not found")
 	}

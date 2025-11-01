@@ -1,76 +1,75 @@
-<div class="card" style="margin-top: 20px;">
-    <h3>Patient Details</h3>
-    
-    <div class="patient-detail">
-        <div class="info-group">
-            <strong>Patient ID:</strong> {{.Patient.ID}}
-        </div>
-        <div class="info-group">
-            <strong>First Name:</strong> {{.Patient.FirstName}}
-        </div>
-        <div class="info-group">
-            <strong>Last Name:</strong> {{.Patient.LastName}}
-        </div>
-        <div class="info-group">
-            <strong>Date of Birth:</strong> {{.Patient.DOB}}
-        </div>
-    </div>
+<h3>Patient Details</h3>
 
-    <div class="section">
-        <h4>Prescriptions</h4>
-        {{if .Patient.Prescriptions}}
-        <table>
-            <thead>
-                <tr>
-                    <th>Medication</th>
-                    <th>Dosage</th>
-                    <th>Frequency</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .Patient.Prescriptions}}
-                <tr>
-                    <td>{{.MedicationName}}</td>
-                    <td>{{.Dosage}}</td>
-                    <td>{{.Frequency}}</td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-        {{else}}
-        <p>No prescriptions found for this patient.</p>
-        {{end}}
+<div class="patient-detail">
+    <div class="info-group">
+        <strong>Patient ID:</strong> {{.Patient.ID}}
     </div>
-
-    <div class="section">
-        <h4>Exams</h4>
-        {{if .Patient.Exams}}
-        <table>
-            <thead>
-                <tr>
-                    <th>Exam Type</th>
-                    <th>Result</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .Patient.Exams}}
-                <tr>
-                    <td>{{.ExamTypeName}}</td>
-                    <td>{{.Result}}</td>
-                    <td>{{.CreatedAt}}</td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-        {{else}}
-        <p>No exams found for this patient.</p>
-        {{end}}
+    <div class="info-group">
+        <strong>First Name:</strong> {{.Patient.FirstName}}
     </div>
-
-    <button 
-        class="btn btn-danger" 
-        onclick="document.getElementById('patient-detail-modal').innerHTML = '';">
-        Close
-    </button>
+    <div class="info-group">
+        <strong>Last Name:</strong> {{.Patient.LastName}}
+    </div>
+    <div class="info-group">
+        <strong>Date of Birth:</strong> {{.Patient.DOB}}
+    </div>
 </div>
+
+<div class="section">
+    <h4>Prescriptions</h4>
+    {{if .Patient.Prescriptions}}
+    <table>
+        <thead>
+            <tr>
+                <th>Medication</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Patient.Prescriptions}}
+            <tr>
+                <td>{{.MedicationName}}</td>
+                <td>{{.Dosage}}</td>
+                <td>{{.Frequency}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <p>No prescriptions found for this patient.</p>
+    {{end}}
+</div>
+
+<div class="section">
+    <h4>Exams</h4>
+    {{if .Patient.Exams}}
+    <table>
+        <thead>
+            <tr>
+                <th>Exam Type</th>
+                <th>Result</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Patient.Exams}}
+            <tr>
+                <td>{{.ExamTypeName}}</td>
+                <td>{{.Result}}</td>
+                <td>{{.CreatedAt}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <p>No exams found for this patient.</p>
+    {{end}}
+</div>
+
+<button 
+    class="btn btn-danger" 
+    onclick="document.getElementById('patient-detail-modal').innerHTML = '';">
+    Close
+</button>
+
