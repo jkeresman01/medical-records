@@ -14,11 +14,16 @@ var DB *gorm.DB
 
 func Connect(cfg *config.Config) {
 	db, err := gorm.Open(postgres.Open(cfg.ConnString()), &gorm.Config{})
+
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	if err := db.AutoMigrate(
+	DB = db
+}
+
+func Migrate() {
+	if err := DB.AutoMigrate(
 		&models.Patient{},
 		&models.Medication{},
 		&models.Prescription{},
@@ -28,9 +33,7 @@ func Connect(cfg *config.Config) {
 		log.Fatalf("Failed to migrate models: %v", err)
 	}
 
-	DB = db
-
-	seedExamTypes(db)
+	seedExamTypes(DB)
 }
 
 func seedExamTypes(db *gorm.DB) {

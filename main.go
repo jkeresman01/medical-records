@@ -13,7 +13,9 @@ import (
 
 func main() {
 	cfg := config.GetFromEnv()
+
 	db.Connect(cfg)
+	db.Migrate()
 
 	views := html.New("./views", ".html")
 
