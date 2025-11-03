@@ -39,9 +39,9 @@ Respect general principles such as:
 ├── routes/              # Route definitions
 ├── docker/              # Docker componse
 ├── viewmodels/          # View models
-├── static/              # Static nonsense
-│   ├── css/
-│   └── templates/       # HTML templates
+├── static/              # Static nonsense (css)
+│       ├──css/
+├── views/                 #views
 │       ├── patients/
 │       ├── medications/
 │       ├── prescriptions/
