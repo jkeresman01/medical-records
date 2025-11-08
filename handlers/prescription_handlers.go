@@ -111,8 +111,15 @@ func CreatePrescription(c *fiber.Ctx) error {
 	medicationRepository := repositoryfactory.GetInstance[models.Medication]()
 	patientRepository := repositoryfactory.GetInstance[models.Patient]()
 
-	patientID, _ := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
-	medicationID, _ := strconv.ParseUint(c.FormValue("medication_id"), 10, 32)
+	patientID, err := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
+	}
+
+	medicationID, err := strconv.ParseUint(c.FormValue("medication_id"), 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
+	}
 
 	medication, err := medicationRepository.FindByID(uint(medicationID))
 	if err != nil {
