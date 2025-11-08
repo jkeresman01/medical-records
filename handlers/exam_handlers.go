@@ -147,8 +147,15 @@ func UpdateExam(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("Exam not found")
 	}
 
-	patientID, _ := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
-	examTypeID, _ := strconv.ParseUint(c.FormValue("exam_type_id"), 10, 32)
+	patientID, err := strconv.ParseUint(c.FormValue("patient_id"), 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
+	}
+
+	examTypeID, err := strconv.ParseUint(c.FormValue("exam_type_id"), 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("Invalid ID")
+	}
 
 	exam.PatientID = uint(patientID)
 	exam.ExamTypeID = uint(examTypeID)
